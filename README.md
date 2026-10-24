@@ -51,5 +51,5 @@ Contributions, bug reports, and suggestions are welcome.
 
 ## License
 
-Licensed under the MIT License.
+This project is licensed under the Apache License 2.0.
 See [LICENSE](LICENSE).
