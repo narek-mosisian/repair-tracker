@@ -131,9 +131,10 @@ export default function OrderDashboard({ today }: { today: string }) {
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [formError, setFormError] = useState("");
+  const [editingOrderId, setEditingOrderId] = useState<number | null>(null);
 
   // Neuen Auftrag erstellen
-  function addOrder(event: SubmitEvent<HTMLFormElement>) {
+  function saveOrder(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!customer.trim() || !description.trim()) {
@@ -143,24 +144,62 @@ export default function OrderDashboard({ today }: { today: string }) {
         return;
     }
 
-    const newOrder: Order = {
-      id: nextId.current++,
-      customer: customer.trim(),
-      description: description.trim(),
-      status: "Offen",
-      receivedAt: getToday(),
-      dueDate: dueDate || null,
-      completedAt: null,
-    };
+    if (dueDate && dueDate < getToday()) {
+        setFormError(
+            "Der Fertigstellungstermin darf nicht in der Vergangenheit liegen."
+        );
+        return;
+    }
 
-    setOrders((current) => [...current, newOrder]);
+    if (editingOrderId !== null) {
+        // Bestehenden Auftrag aktualisieren
+        setOrders((current) =>
+            current.map((order) =>
+                order.id === editingOrderId
+                    ? {
+                        ...order,
+                        customer: customer.trim(),
+                        description: description.trim(),
+                        dueDate: dueDate || null,
+                    }
+                : order
+            )
+        );
+    } else {
+        // Neuen Auftrag erstellen
+        const newOrder: Order = {
+            id: nextId.current++,
+            customer: customer.trim(),
+            description: description.trim(),
+            status: "Offen",
+            receivedAt: getToday(),
+            dueDate: dueDate || null,
+            completedAt: null,
+        };
+
+        setOrders((current) => [...current, newOrder]);
+    }
 
     // Formular zurücksetzen
     setCustomer("");
     setDescription("");
     setDueDate("");
     setFormError("");
+    setEditingOrderId(null);
     setShowForm(false);
+  }
+
+  // Bestehenden Auftrag bearbeiten
+  function editOrder(order: Order) {
+    setEditingOrderId(order.id);
+    setCustomer(order.customer);
+    setDescription(order.description);
+    setDueDate(order.dueDate ?? "");
+    setFormError("");
+    setShowForm(true);
+
+    // Zum Formular nach oben scrollen
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   // Auftragsstatus ändern
@@ -243,6 +282,10 @@ export default function OrderDashboard({ today }: { today: string }) {
             type="button"
             onClick={() => {
                 setShowForm(!showForm);
+                setEditingOrderId(null);
+                setCustomer("");
+                setDescription("");
+                setDueDate("");
                 setFormError("");
             }}
             className="rounded-lg bg-gray-900 px-5 py-3 font-medium text-white hover:bg-gray-700"
@@ -255,10 +298,12 @@ export default function OrderDashboard({ today }: { today: string }) {
         {showForm && (
           <section className="rounded-xl border bg-white p-6">
             <h2 className="mb-5 text-xl font-semibold">
-              Neuen Auftrag erstellen
+                {editingOrderId !== null
+                    ? `Auftrag #${editingOrderId} bearbeiten`
+                    : "Neuen Auftrag erstellen"}
             </h2>
 
-            <form onSubmit={addOrder} className="space-y-4">
+            <form onSubmit={saveOrder} className="space-y-4">
 
               {/* Kundenname */}
               <div>
@@ -320,8 +365,12 @@ export default function OrderDashboard({ today }: { today: string }) {
                 <input
                   id="dueDate"
                   type="date"
+                  min={today}
                   value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
+                  onChange={(e) => {
+                    setDueDate(e.target.value);
+                    setFormError("");
+                  }}
                   className="w-full rounded-lg border p-3"
                 />
               </div>
@@ -339,7 +388,9 @@ export default function OrderDashboard({ today }: { today: string }) {
                 type="submit"
                 className="rounded-lg bg-gray-900 px-5 py-3 font-medium text-white hover:bg-gray-700"
                 >
-                Auftrag speichern
+                  {editingOrderId !== null
+                    ? "Änderungen speichern"
+                    : "Auftrag speichern"}
                 </button>
             </form>
           </section>
@@ -478,14 +529,25 @@ export default function OrderDashboard({ today }: { today: string }) {
 
                       {/* Auftrag löschen */}
                       <td className="p-3">
-                        <button
-                          type="button"
-                          onClick={() => deleteOrder(order.id)}
-                          aria-label={`Auftrag ${order.id} löschen`}
-                          className="rounded-lg px-3 py-2 text-red-700 hover:bg-red-100"
-                        >
-                          Löschen
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => editOrder(order)}
+                            aria-label={`Auftrag ${order.id} bearbeiten`}
+                            className="rounded-lg px-3 py-2 text-blue-700 hover:bg-blue-50"
+                          >
+                            Bearbeiten
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => deleteOrder(order.id)}
+                            aria-label={`Auftrag ${order.id} löschen`}
+                            className="rounded-lg px-3 py-2 text-red-700 hover:bg-red-100"
+                          >
+                            Löschen
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
