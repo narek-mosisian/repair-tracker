@@ -18,6 +18,28 @@ async function DashboardContent() {
     redirect("/login");
   }
 
+  const organizationId = session.session.activeOrganizationId;
+
+  if (!organizationId) {
+    redirect("/setup");
+  }
+
+  // Prüfen, ob der Benutzer wirklich Mitglied ist
+  const membership = await prisma.member.findFirst({
+    where: {
+      userId: session.user.id,
+      organizationId,
+    },
+    select: {
+      id: true,
+      role: true,
+    },
+  });
+
+  if (!membership) {
+    redirect("/setup");
+  }
+
   const today = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Europe/Berlin",
     year: "numeric",
@@ -26,7 +48,12 @@ async function DashboardContent() {
   }).format(new Date());
 
   const dbOrders = await prisma.order.findMany({
-    orderBy: { id: "asc" },
+    where: {
+      organizationId,
+    },
+    orderBy: {
+      id: "asc",
+    },
   });
 
   const initialOrders = dbOrders.map((order) => ({
