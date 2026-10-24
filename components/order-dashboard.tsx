@@ -15,37 +15,6 @@ type Order = {
   completedAt: string | null;
 };
 
-// Beispielaufträge
-const initialOrders: Order[] = [
-  {
-    id: 1,
-    customer: "Max Müller",
-    description: "Fahrradreparatur",
-    status: "Offen",
-    receivedAt: "2026-10-19",
-    dueDate: "2026-10-25",
-    completedAt: null,
-  },
-  {
-    id: 2,
-    customer: "Lisa Weber",
-    description: "Schuhreparatur",
-    status: "In Bearbeitung",
-    receivedAt: "2026-10-20",
-    dueDate: "2026-10-23",
-    completedAt: null,
-  },
-  {
-    id: 3,
-    customer: "Tim Schmidt",
-    description: "Smartphone",
-    status: "Abgeschlossen",
-    receivedAt: "2026-10-15",
-    dueDate: "2026-10-20",
-    completedAt: "2026-10-18",
-  },
-];
-
 const statuses: Status[] = [
   "Offen",
   "In Bearbeitung",
@@ -115,7 +84,7 @@ function sortOrders(orders: Order[]): Order[] {
   });
 }
 
-export default function OrderDashboard({ today }: { today: string }) {
+export default function OrderDashboard({ today, initialOrders }: { today: string, initialOrders: Order[] }) {
   // Aufträge im React-State speichern
   const [orders, setOrders] = useState<Order[]>(initialOrders);
 
