@@ -2,6 +2,7 @@
 "use client";
 
 import { useRef, useState, type SubmitEvent } from "react";
+import LogoutButton from "@/components/logout-button";
 
 type Status = "Offen" | "In Bearbeitung" | "Abgeschlossen";
 
@@ -261,6 +262,7 @@ export default function OrderDashboard({ today, initialOrders }: { today: string
           >
             {showForm ? "Abbrechen" : "+ Neuer Auftrag"}
           </button>
+          <LogoutButton />
         </header>
 
         {/* Formular zum Erstellen neuer Aufträge */}

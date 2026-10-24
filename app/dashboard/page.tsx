@@ -1,11 +1,22 @@
 
 import { Suspense } from "react";
 import { connection } from "next/server";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import OrderDashboard from "@/components/order-dashboard";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 async function DashboardContent() {
   await connection();
+
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/login");
+  }
 
   const today = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Europe/Berlin",
