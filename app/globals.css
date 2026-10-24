@@ -24,3 +24,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Anklickbare Elemente */
+a:hover,
+button:hover,
+input[type="date"]:hover,
+input[type="checkbox"]:hover,
+input[type="radio"]:hover,
+select:hover,
+label[for]:hover,
+[role="button"]:hover {
+  cursor: pointer;
+}
+
+/* Texteingabefelder */
+input:not([type="date"]):not([type="checkbox"]):not([type="radio"]):hover,
+textarea:hover {
+  cursor: text;
+}
+
+/* Deaktivierte Eingabeelemente */
+button:disabled:hover,
+input:disabled:hover,
+textarea:disabled:hover,
+select:disabled:hover {
+  cursor: not-allowed;
+}
